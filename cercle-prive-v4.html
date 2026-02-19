@@ -1,0 +1,1287 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
+<title>CalcPro</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,600;0,700;1,400&family=Cormorant+Garamond:ital,wght@0,300;0,400;1,400&family=Montserrat:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+/* ══════════════════════════════════════════════════ BASE */
+*,*::before,*::after{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
+:root{
+  --gold:#D4A843;--gold2:#F0C96A;--gold3:#8A6820;--gold-g:rgba(212,168,67,.35);
+  --warm1:#1A0E06;--warm2:#2A1A0A;--warm3:#3D2510;
+  --glass:rgba(255,255,255,.08);--glass2:rgba(255,255,255,.13);
+  --border:rgba(212,168,67,.3);--border2:rgba(255,255,255,.12);
+  --text:#FFF8F0;--t2:rgba(255,248,240,.72);--t3:rgba(255,248,240,.38);
+  --red-btn:#7B2020;--red-btn2:#9B3030;
+  --green:#25D366;--red:#FF4757;
+  --dock-h:80px;
+}
+html,body{height:100%;overflow:hidden;background:var(--warm1);color:var(--text);
+  font-family:'Montserrat',sans-serif;-webkit-user-select:none;user-select:none;}
+
+/* ══ BOKEH ANIMATED BACKGROUND ══ */
+.bg{position:fixed;inset:0;z-index:0;overflow:hidden;}
+.bg-base{position:absolute;inset:0;
+  background:radial-gradient(ellipse 120% 80% at 50% 0%,#3D1A08 0%,#1A0A04 45%,#0D0704 100%);}
+.bokeh-wrap{position:absolute;inset:0;}
+.bk{position:absolute;border-radius:50%;filter:blur(40px);animation:bkAnim ease-in-out infinite;opacity:0;}
+@keyframes bkAnim{
+  0%{opacity:0;transform:scale(.6) translate(0,0);}
+  20%{opacity:1;}
+  80%{opacity:.8;}
+  100%{opacity:0;transform:scale(1.4) translate(var(--tx),var(--ty));}
+}
+/* Gold bokeh circles */
+.bk:nth-child(1){width:180px;height:180px;background:radial-gradient(circle,rgba(212,168,67,.9),transparent 70%);top:10%;left:5%;animation-duration:8s;animation-delay:0s;--tx:20px;--ty:-30px;}
+.bk:nth-child(2){width:120px;height:120px;background:radial-gradient(circle,rgba(240,200,100,.8),transparent 70%);top:5%;right:15%;animation-duration:11s;animation-delay:2s;--tx:-15px;--ty:20px;}
+.bk:nth-child(3){width:200px;height:200px;background:radial-gradient(circle,rgba(180,120,30,.7),transparent 70%);top:30%;left:60%;animation-duration:9s;animation-delay:4s;--tx:10px;--ty:-20px;}
+.bk:nth-child(4){width:90px;height:90px;background:radial-gradient(circle,rgba(255,220,100,.9),transparent 70%);top:15%;left:40%;animation-duration:7s;animation-delay:1s;--tx:-25px;--ty:15px;}
+.bk:nth-child(5){width:150px;height:150px;background:radial-gradient(circle,rgba(212,168,67,.7),transparent 70%);top:50%;left:10%;animation-duration:13s;animation-delay:3s;--tx:30px;--ty:-10px;}
+.bk:nth-child(6){width:100px;height:100px;background:radial-gradient(circle,rgba(240,180,60,.8),transparent 70%);top:60%;right:5%;animation-duration:10s;animation-delay:5s;--tx:-20px;--ty:-25px;}
+.bk:nth-child(7){width:250px;height:250px;background:radial-gradient(circle,rgba(100,50,10,.5),transparent 70%);top:70%;left:30%;animation-duration:15s;animation-delay:2s;--tx:15px;--ty:-15px;}
+.bk:nth-child(8){width:80px;height:80px;background:radial-gradient(circle,rgba(255,230,120,.95),transparent 70%);top:25%;right:30%;animation-duration:6s;animation-delay:0.5s;--tx:-10px;--ty:30px;}
+.bk:nth-child(9){width:130px;height:130px;background:radial-gradient(circle,rgba(180,100,20,.6),transparent 70%);bottom:20%;left:20%;animation-duration:12s;animation-delay:6s;--tx:20px;--ty:-20px;}
+.bk:nth-child(10){width:70px;height:70px;background:radial-gradient(circle,rgba(255,200,80,.9),transparent 70%);bottom:35%;right:20%;animation-duration:8.5s;animation-delay:1.5s;--tx:-30px;--ty:10px;}
+/* Shimmer overlay */
+.bg-shimmer{position:absolute;inset:0;
+  background:linear-gradient(180deg,rgba(212,168,67,.04) 0%,transparent 40%,rgba(212,168,67,.06) 100%);
+  animation:shim 4s ease-in-out infinite;}
+@keyframes shim{0%,100%{opacity:.6;}50%{opacity:1;}}
+
+/* ══ SCREENS ══ */
+.screen{position:fixed;inset:0;z-index:10;display:flex;flex-direction:column;overflow:hidden;}
+.screen.hidden{display:none!important;}
+@keyframes fadeUp{from{opacity:0;transform:translateY(10px);}to{opacity:1;transform:translateY(0);}}
+.screen:not(.hidden){animation:fadeUp .3s ease;}
+
+/* ══ GLASS CARD ══ */
+.glass-card{
+  background:rgba(255,255,255,.07);
+  backdrop-filter:blur(24px);-webkit-backdrop-filter:blur(24px);
+  border:1px solid rgba(212,168,67,.25);
+  border-radius:20px;
+}
+.glass-card-warm{
+  background:linear-gradient(135deg,rgba(212,168,67,.1),rgba(255,255,255,.05));
+  backdrop-filter:blur(24px);-webkit-backdrop-filter:blur(24px);
+  border:1px solid rgba(212,168,67,.3);
+}
+
+/* ══════════════════════════════════════════════════ DOCK (iPhone style) */
+.dock{
+  position:fixed;bottom:0;left:50%;transform:translateX(-50%);z-index:100;
+  width:calc(100% - 20px);max-width:430px;
+  height:var(--dock-h);
+  background:rgba(20,10,4,.75);
+  backdrop-filter:blur(40px);-webkit-backdrop-filter:blur(40px);
+  border:1px solid rgba(212,168,67,.2);
+  border-radius:28px 28px 0 0;
+  display:flex;justify-content:space-around;align-items:center;
+  padding:0 8px 10px;
+}
+.dock-item{
+  display:flex;flex-direction:column;align-items:center;gap:4px;
+  cursor:pointer;color:rgba(255,248,240,.4);
+  font-size:.46rem;letter-spacing:1.5px;transition:all .25s;flex:1;padding:.5rem 0;
+}
+.dock-icon{
+  width:26px;height:26px;display:flex;align-items:center;justify-content:center;
+  font-size:1.3rem;transition:all .25s;
+}
+.dock-item.active{color:var(--gold);}
+.dock-item.active .dock-icon{
+  filter:drop-shadow(0 0 8px var(--gold-g));
+  transform:scale(1.1);
+}
+.dock-badge{
+  position:absolute;top:-4px;right:-6px;background:var(--red);
+  color:#fff;font-size:.42rem;padding:1px 5px;border-radius:10px;
+  min-width:16px;text-align:center;font-weight:700;
+}
+.dock-icon-wrap{position:relative;display:inline-flex;}
+
+/* ══════════════════════════════════════════════════ AGE GATE */
+#age-gate{
+  align-items:center;justify-content:center;text-align:center;padding:2rem;
+  background:linear-gradient(160deg,#140A03 0%,#1E0E06 100%);
+}
+.age-logo{
+  font-family:'Playfair Display',serif;font-size:2.8rem;
+  color:var(--gold);letter-spacing:6px;
+  text-shadow:0 0 40px var(--gold-g),0 0 80px rgba(212,168,67,.2);
+  animation:logoGlow 3s ease-in-out infinite;margin-bottom:.3rem;
+}
+@keyframes logoGlow{0%,100%{text-shadow:0 0 30px var(--gold-g);}50%{text-shadow:0 0 80px var(--gold-g),0 0 120px rgba(212,168,67,.15);}}
+.age-sub{font-size:.55rem;letter-spacing:8px;color:var(--t3);margin-bottom:3rem;}
+.age-box{
+  background:rgba(255,255,255,.06);backdrop-filter:blur(30px);
+  border:1px solid rgba(212,168,67,.3);border-radius:24px;
+  padding:2.5rem 2rem;max-width:340px;width:100%;
+}
+.age-icon{font-size:3.2rem;margin-bottom:1rem;}
+.age-title{font-family:'Playfair Display',serif;font-size:1.3rem;color:var(--text);margin-bottom:.8rem;}
+.age-text{font-size:.72rem;color:var(--t2);line-height:1.8;margin-bottom:2rem;}
+.btn-enter{
+  width:100%;padding:1rem;border-radius:12px;border:none;
+  background:linear-gradient(135deg,var(--gold),var(--gold3));
+  color:#1A0A03;font-family:'Montserrat',sans-serif;
+  font-size:.72rem;letter-spacing:3px;font-weight:700;
+  cursor:pointer;transition:all .3s;
+  box-shadow:0 6px 24px var(--gold-g);
+}
+.btn-enter:active{transform:scale(.97);}
+.btn-leave{
+  width:100%;padding:.7rem;margin-top:8px;border-radius:12px;
+  border:1px solid rgba(255,255,255,.1);background:transparent;
+  color:var(--t3);font-size:.65rem;letter-spacing:2px;cursor:pointer;
+}
+
+/* ══════════════════════════════════════════════════ PIN */
+#pin-screen{align-items:center;justify-content:center;text-align:center;padding:2rem;}
+.pin-logo{font-family:'Playfair Display',serif;font-size:2.3rem;color:var(--gold);letter-spacing:6px;animation:logoGlow 3s infinite;margin-bottom:.3rem;}
+.pin-sub-t{font-size:.52rem;letter-spacing:8px;color:var(--t3);margin-bottom:2.5rem;}
+.pin-card{
+  background:rgba(255,255,255,.06);backdrop-filter:blur(30px);
+  border:1px solid rgba(212,168,67,.3);border-radius:24px;
+  padding:2rem 1.5rem;width:100%;max-width:320px;
+}
+.pin-title{font-family:'Cormorant Garamond',serif;font-style:italic;font-size:1.1rem;color:var(--t2);margin-bottom:1.5rem;}
+.pin-dots{display:flex;gap:14px;justify-content:center;margin-bottom:2rem;}
+.pin-dot{width:14px;height:14px;border-radius:50%;border:2px solid rgba(212,168,67,.4);transition:all .3s;}
+.pin-dot.filled{background:var(--gold);border-color:var(--gold);box-shadow:0 0 14px var(--gold-g);}
+.pin-kp{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;}
+.pk{
+  aspect-ratio:1;border-radius:50%;
+  border:1px solid rgba(255,255,255,.1);
+  background:rgba(255,255,255,.04);
+  color:var(--text);font-size:1.3rem;font-weight:300;
+  cursor:pointer;display:flex;align-items:center;justify-content:center;
+  transition:all .15s;
+}
+.pk:active{background:rgba(212,168,67,.2);border-color:var(--gold);transform:scale(.92);}
+.pk.empty{visibility:hidden;}
+.pk.del{font-size:.9rem;color:var(--t3);}
+.bio-btn{
+  width:100%;margin-top:.8rem;padding:.8rem;border-radius:10px;
+  border:1px solid rgba(212,168,67,.3);background:rgba(212,168,67,.06);
+  color:var(--t2);font-size:.68rem;letter-spacing:1.5px;cursor:pointer;
+  display:flex;align-items:center;justify-content:center;gap:8px;
+}
+.pin-err{color:var(--red);font-size:.68rem;margin-top:.8rem;height:1.1rem;opacity:0;transition:opacity .3s;}
+.pin-err.show{opacity:1;}
+.pin-mode{font-size:.56rem;color:var(--t3);margin-top:.6rem;letter-spacing:1px;}
+
+/* ══════════════════════════════════════════════════ HOME */
+#home-screen{padding-bottom:var(--dock-h);}
+.home-header{
+  display:flex;justify-content:space-between;align-items:center;
+  padding:1.2rem 1.2rem .8rem;flex-shrink:0;
+}
+.home-brand{font-family:'Playfair Display',serif;font-size:1rem;color:var(--gold);letter-spacing:4px;}
+.home-actions{display:flex;gap:8px;align-items:center;}
+.theme-btn{
+  width:34px;height:34px;border-radius:50%;
+  border:1px solid rgba(212,168,67,.3);background:rgba(212,168,67,.08);
+  color:var(--text);font-size:1rem;cursor:pointer;
+  display:flex;align-items:center;justify-content:center;
+}
+.lang-sel{
+  padding:5px 10px;border-radius:20px;
+  border:1px solid rgba(212,168,67,.3);
+  background:rgba(212,168,67,.08);
+  color:var(--gold);font-size:.6rem;letter-spacing:1px;
+  cursor:pointer;outline:none;-webkit-appearance:none;appearance:none;
+}
+.home-body{flex:1;overflow-y:auto;padding:0 1.2rem 1.5rem;}
+.home-eyebrow{font-size:.55rem;letter-spacing:5px;color:var(--gold);opacity:.6;text-align:center;margin-bottom:.8rem;}
+.home-heading{
+  font-family:'Playfair Display',serif;
+  font-size:clamp(1.6rem,6vw,2.2rem);
+  text-align:center;color:var(--text);
+  margin-bottom:2rem;font-weight:400;
+}
+/* CATEGORY CARDS — matching mockup */
+.cat-cards{display:flex;flex-direction:column;gap:14px;width:100%;}
+.cat-card{
+  border-radius:20px;overflow:hidden;position:relative;
+  height:170px;cursor:pointer;transition:all .35s;
+  border:1px solid rgba(212,168,67,.25);
+  background:rgba(255,255,255,.06);
+  backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);
+}
+.cat-card:active{transform:scale(.98);}
+.cat-card-photo{
+  position:absolute;left:0;top:0;bottom:0;width:50%;
+  overflow:hidden;
+}
+.cat-card-photo img{
+  width:100%;height:100%;object-fit:cover;object-position:top center;
+  display:block;
+}
+.cat-card-photo-overlay{
+  position:absolute;inset:0;
+  background:linear-gradient(90deg,transparent 60%,rgba(15,8,3,.9) 100%);
+}
+.cat-card-content{
+  position:absolute;right:0;top:0;bottom:0;width:58%;
+  display:flex;flex-direction:column;align-items:center;justify-content:center;
+  padding:1rem;gap:12px;
+}
+.cat-card-title{
+  font-family:'Playfair Display',serif;
+  font-size:1.6rem;color:var(--gold2);letter-spacing:3px;font-weight:600;
+  text-shadow:0 2px 20px rgba(212,168,67,.4);
+}
+.cat-explore-btn{
+  padding:.6rem 1.4rem;border-radius:30px;border:none;
+  background:linear-gradient(135deg,var(--red-btn),var(--red-btn2));
+  color:#FFE8D0;font-family:'Montserrat',sans-serif;
+  font-size:.65rem;letter-spacing:2px;font-weight:600;
+  cursor:pointer;box-shadow:0 4px 16px rgba(100,20,20,.4);
+  transition:all .2s;
+}
+.cat-explore-btn:active{transform:scale(.95);}
+.cat-card-glow{
+  position:absolute;inset:0;pointer-events:none;
+  background:radial-gradient(ellipse at 80% 50%,rgba(212,168,67,.06),transparent 70%);
+}
+.home-footer{text-align:center;padding:.5rem 0;font-size:.48rem;letter-spacing:3px;color:var(--t3);}
+
+/* ══════════════════════════════════════════════════ GALLERY */
+#gallery-screen{padding-bottom:var(--dock-h);}
+.g-header{
+  padding:1rem 1.2rem .8rem;
+  background:linear-gradient(180deg,rgba(15,8,3,.97) 80%,transparent);
+  position:sticky;top:0;z-index:20;flex-shrink:0;
+  backdrop-filter:blur(20px);
+}
+.g-top{display:flex;align-items:center;justify-content:space-between;margin-bottom:.8rem;}
+.back-btn{
+  display:flex;align-items:center;gap:6px;
+  color:var(--gold);font-size:.62rem;letter-spacing:2px;
+  cursor:pointer;background:none;border:none;
+}
+.g-title{font-family:'Playfair Display',serif;font-size:1.5rem;margin-bottom:.8rem;}
+.g-title span{color:var(--gold);}
+.filters{display:flex;gap:8px;overflow-x:auto;padding-bottom:4px;scrollbar-width:none;}
+.filters::-webkit-scrollbar{display:none;}
+.filt{
+  padding:5px 13px;border-radius:20px;font-size:.58rem;letter-spacing:1px;
+  border:1px solid rgba(255,255,255,.1);background:transparent;
+  color:var(--t3);cursor:pointer;transition:all .2s;white-space:nowrap;flex-shrink:0;
+}
+.filt.active{border-color:var(--gold);color:var(--gold);background:rgba(212,168,67,.1);}
+.g-body{flex:1;overflow-y:auto;padding:.8rem 1rem calc(var(--dock-h) + 1rem);}
+.pgrid{display:grid;grid-template-columns:repeat(2,1fr);gap:12px;}
+
+/* PROFILE CARD */
+.pcard{
+  border-radius:18px;overflow:hidden;
+  border:1px solid rgba(212,168,67,.15);
+  background:rgba(255,255,255,.06);
+  backdrop-filter:blur(16px);
+  cursor:pointer;transition:all .3s;position:relative;
+}
+.pcard:active{transform:scale(.97);}
+.pc-img{aspect-ratio:3/4;position:relative;overflow:hidden;}
+.pc-photo{width:100%;height:100%;object-fit:cover;display:block;}
+.pc-sil{width:100%;height:100%;display:flex;align-items:center;justify-content:center;font-size:4rem;}
+.pc-sil-f{background:linear-gradient(160deg,#3D1A20,#1A0810);}
+.pc-sil-m{background:linear-gradient(160deg,#1A2A3D,#080F1A);}
+.pc-overlay{position:absolute;inset:0;background:linear-gradient(to top,rgba(15,8,3,.95) 0%,rgba(15,8,3,.15) 55%,transparent 100%);}
+.pc-badge{
+  position:absolute;top:8px;left:8px;
+  background:linear-gradient(135deg,var(--gold),var(--gold3));
+  color:#1A0A03;font-size:.42rem;letter-spacing:1.5px;font-weight:700;
+  padding:3px 8px;border-radius:4px;
+}
+.pc-fav{
+  position:absolute;top:7px;right:7px;width:30px;height:30px;border-radius:50%;
+  border:none;background:rgba(15,8,3,.65);backdrop-filter:blur(10px);
+  font-size:.85rem;cursor:pointer;display:flex;align-items:center;justify-content:center;
+  color:var(--t3);transition:all .2s;
+}
+.pc-fav.on{color:var(--red);}
+.pc-info{padding:9px 11px 11px;}
+.pc-name{font-family:'Playfair Display',serif;font-size:.95rem;color:var(--text);}
+.pc-meta{font-size:.55rem;color:var(--t3);letter-spacing:1px;margin-top:2px;}
+.pc-langs{display:flex;gap:4px;margin-top:5px;flex-wrap:wrap;}
+.ltag{font-size:.48rem;padding:2px 5px;border-radius:3px;border:1px solid rgba(212,168,67,.2);color:var(--t3);}
+.pc-rate{font-size:.68rem;color:var(--gold);font-weight:600;margin-top:5px;}
+
+/* ══════════════════════════════════════════════════ FAVORITES */
+#fav-screen{padding-bottom:var(--dock-h);}
+.fav-header{padding:1.5rem 1.2rem 1rem;flex-shrink:0;}
+.fav-title{font-family:'Playfair Display',serif;font-size:1.5rem;}
+.fav-title span{color:var(--gold);}
+.fav-body{flex:1;overflow-y:auto;padding:.5rem 1rem 1rem;}
+.fav-empty{display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:4rem 2rem;color:var(--t3);}
+.fav-empty-ic{font-size:3.5rem;margin-bottom:1rem;opacity:.25;}
+.fav-empty-t{font-family:'Cormorant Garamond',serif;font-style:italic;font-size:1rem;}
+
+/* ══════════════════════════════════════════════════ RESERVATIONS */
+#resa-screen{padding-bottom:var(--dock-h);}
+.resa-header{padding:1.5rem 1.2rem 1rem;flex-shrink:0;}
+.resa-title{font-family:'Playfair Display',serif;font-size:1.5rem;}
+.resa-title span{color:var(--gold);}
+.resa-body{flex:1;overflow-y:auto;padding:.5rem 1.2rem 1rem;}
+.resa-empty{display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:4rem 2rem;color:var(--t3);}
+.resa-hint{font-family:'Cormorant Garamond',serif;font-style:italic;font-size:.95rem;}
+
+/* ══════════════════════════════════════════════════ PROFILE DETAIL */
+#profile-screen{overflow-y:auto;padding-bottom:calc(var(--dock-h) + 1rem);}
+.ph-wrap{position:relative;height:58vh;overflow:hidden;flex-shrink:0;}
+.ph-slides{display:flex;height:100%;transition:transform .35s ease;}
+.ph-slide{flex-shrink:0;width:100%;height:100%;display:flex;align-items:center;justify-content:center;}
+.ph-slide img{width:100%;height:100%;object-fit:cover;display:block;}
+.ph-slide-f{background:linear-gradient(160deg,#3D1A20,#1A0810);font-size:8rem;}
+.ph-slide-m{background:linear-gradient(160deg,#1A2A3D,#080F1A);font-size:8rem;}
+.ph-overlay{position:absolute;inset:0;background:linear-gradient(to top,rgba(15,8,3,1) 0%,rgba(15,8,3,.3) 55%,rgba(0,0,0,.2) 100%);}
+.ph-back{
+  position:absolute;top:1.2rem;left:1.2rem;width:38px;height:38px;border-radius:50%;
+  background:rgba(15,8,3,.7);backdrop-filter:blur(20px);
+  border:1px solid rgba(212,168,67,.3);
+  display:flex;align-items:center;justify-content:center;color:var(--gold);font-size:.9rem;cursor:pointer;
+}
+.ph-fav{
+  position:absolute;top:1.2rem;right:1.2rem;width:38px;height:38px;border-radius:50%;
+  background:rgba(15,8,3,.7);backdrop-filter:blur(20px);
+  border:1px solid rgba(212,168,67,.3);
+  display:flex;align-items:center;justify-content:center;font-size:1.1rem;cursor:pointer;
+  color:var(--t3);transition:all .2s;
+}
+.ph-fav.on{color:var(--red);}
+.ph-dots{position:absolute;bottom:78px;left:50%;transform:translateX(-50%);display:flex;gap:5px;}
+.ph-dot{width:5px;height:5px;border-radius:50%;background:rgba(255,255,255,.3);transition:all .3s;}
+.ph-dot.active{background:var(--gold);width:14px;border-radius:3px;}
+.ph-info{position:absolute;bottom:1rem;left:1.2rem;right:1.2rem;}
+.ph-name{font-family:'Playfair Display',serif;font-size:1.9rem;color:var(--text);}
+.ph-meta{font-size:.62rem;color:var(--t2);letter-spacing:2px;margin-top:4px;}
+.pbody{padding:1rem 1.2rem;}
+.stats-row{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:1rem;}
+.stat{
+  background:rgba(212,168,67,.07);backdrop-filter:blur(10px);
+  border:1px solid rgba(212,168,67,.2);border-radius:12px;
+  padding:.7rem .4rem;text-align:center;
+}
+.stat-v{font-family:'Playfair Display',serif;font-size:1rem;color:var(--gold);}
+.stat-l{font-size:.48rem;color:var(--t3);letter-spacing:.5px;margin-top:1px;}
+.sc{
+  background:rgba(255,255,255,.05);backdrop-filter:blur(20px);
+  border:1px solid rgba(212,168,67,.15);border-radius:16px;
+  padding:1.1rem;margin-bottom:1rem;
+}
+.sl{font-size:.52rem;letter-spacing:3px;color:var(--gold);margin-bottom:.7rem;font-weight:600;}
+.bio-t{font-family:'Cormorant Garamond',serif;font-style:italic;font-size:1rem;color:var(--t2);line-height:1.8;}
+.tags{display:flex;flex-wrap:wrap;gap:6px;}
+.tag{padding:4px 11px;border-radius:6px;border:1px solid rgba(255,255,255,.1);font-size:.58rem;color:var(--t2);}
+.tag.g{border-color:rgba(212,168,67,.3);color:var(--gold);}
+/* BOOKING */
+.fg{display:flex;flex-direction:column;gap:5px;margin-bottom:10px;}
+.fg-row{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px;}
+.fl{font-size:.52rem;letter-spacing:2px;color:var(--gold);font-weight:600;}
+.fi,.fs{
+  background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.1);border-radius:8px;
+  color:var(--text);padding:10px 11px;font-family:'Montserrat',sans-serif;font-size:.78rem;
+  width:100%;outline:none;transition:border-color .2s;-webkit-appearance:none;appearance:none;
+}
+.fi:focus,.fs:focus{border-color:var(--gold);}
+.fi::placeholder{color:var(--t3);}
+.fs option{background:#1A0A04;}
+.price-c{
+  background:linear-gradient(135deg,rgba(212,168,67,.12),rgba(212,168,67,.04));
+  border:1px solid rgba(212,168,67,.3);border-radius:12px;
+  padding:1rem;text-align:center;margin:1rem 0;
+}
+.price-l{font-size:.52rem;letter-spacing:3px;color:var(--t3);margin-bottom:.2rem;}
+.price-v{font-family:'Playfair Display',serif;font-size:2.8rem;color:var(--gold);line-height:1;}
+.price-b{font-size:.58rem;color:var(--t3);margin-top:.3rem;}
+.wa-btn{
+  width:100%;padding:1rem;border-radius:12px;border:none;
+  background:linear-gradient(135deg,#25D366,#128C7E);color:#fff;
+  font-family:'Montserrat',sans-serif;font-size:.7rem;letter-spacing:3px;font-weight:600;
+  cursor:pointer;transition:all .3s;display:flex;align-items:center;justify-content:center;gap:8px;
+  box-shadow:0 8px 30px rgba(37,211,102,.2);
+}
+.wa-btn:active{transform:scale(.98);}
+
+/* ══════════════════════════════════════════════════ SETTINGS */
+#settings-screen{padding-bottom:var(--dock-h);}
+.set-header{padding:1.5rem 1.2rem 1rem;flex-shrink:0;}
+.set-title{font-family:'Playfair Display',serif;font-size:1.5rem;}
+.set-title span{color:var(--gold);}
+.set-body{flex:1;overflow-y:auto;padding:.5rem 1.2rem 1rem;}
+.set-sect{margin-bottom:1.5rem;}
+.set-sect-t{font-size:.52rem;letter-spacing:3px;color:var(--gold);margin-bottom:.8rem;font-weight:600;}
+.set-item{
+  background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.08);
+  border-radius:12px;padding:.9rem 1rem;
+  display:flex;align-items:center;justify-content:space-between;
+  margin-bottom:8px;cursor:pointer;transition:all .2s;
+}
+.set-item:hover{border-color:rgba(212,168,67,.3);}
+.set-item-l{display:flex;align-items:center;gap:10px;font-size:.75rem;color:var(--t2);}
+.set-item-ic{font-size:1.2rem;width:28px;text-align:center;}
+.set-item-r{font-size:.7rem;color:var(--t3);}
+.toggle{
+  width:44px;height:24px;border-radius:12px;background:rgba(255,255,255,.1);
+  position:relative;cursor:pointer;transition:background .3s;flex-shrink:0;
+}
+.toggle.on{background:var(--gold);}
+.toggle::after{
+  content:'';position:absolute;width:18px;height:18px;border-radius:50%;
+  background:#fff;top:3px;left:3px;transition:left .3s;
+}
+.toggle.on::after{left:23px;}
+.lang-grid{display:grid;grid-template-columns:repeat(5,1fr);gap:6px;}
+.lang-opt{
+  padding:.6rem .3rem;border-radius:10px;border:1px solid rgba(255,255,255,.08);
+  background:rgba(255,255,255,.04);text-align:center;cursor:pointer;transition:all .2s;
+}
+.lang-opt.active{border-color:var(--gold);background:rgba(212,168,67,.1);}
+.lang-flag{font-size:1.3rem;}
+.lang-name{font-size:.46rem;color:var(--t3);margin-top:3px;letter-spacing:.5px;}
+.lang-opt.active .lang-name{color:var(--gold);}
+.admin-btn{
+  width:100%;padding:1rem;border-radius:12px;
+  border:1px solid rgba(255,80,80,.3);
+  background:rgba(255,80,80,.05);
+  color:var(--red);font-size:.68rem;letter-spacing:3px;
+  cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px;
+}
+
+/* ══════════════════════════════════════════════════ ADMIN */
+#admin-screen{padding-bottom:var(--dock-h);}
+.admin-header{
+  padding:1.2rem 1.2rem .8rem;
+  background:linear-gradient(135deg,rgba(212,168,67,.08),transparent);
+  border-bottom:1px solid rgba(212,168,67,.2);flex-shrink:0;
+}
+.admin-title{font-family:'Playfair Display',serif;font-size:1.3rem;color:var(--gold);}
+.admin-sub{font-size:.52rem;color:var(--t3);letter-spacing:2px;margin-top:2px;}
+.admin-body{flex:1;overflow-y:auto;padding:1rem 1.2rem;}
+.stats-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:10px;margin-bottom:1.5rem;}
+.stat-card{
+  background:rgba(212,168,67,.07);border:1px solid rgba(212,168,67,.2);
+  border-radius:14px;padding:1rem;
+}
+.sc-val{font-family:'Playfair Display',serif;font-size:1.8rem;color:var(--gold);}
+.sc-lbl{font-size:.52rem;color:var(--t3);letter-spacing:1px;margin-top:3px;}
+.admin-sect-t{
+  font-size:.52rem;letter-spacing:3px;color:var(--gold);
+  margin:1.2rem 0 .8rem;font-weight:600;
+  display:flex;align-items:center;justify-content:space-between;
+}
+.add-btn{
+  padding:5px 14px;border-radius:20px;
+  border:1px solid rgba(212,168,67,.3);
+  background:rgba(212,168,67,.1);
+  color:var(--gold);font-size:.52rem;letter-spacing:1px;cursor:pointer;
+}
+.admin-pitem{
+  background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.07);
+  border-radius:12px;padding:.8rem 1rem;margin-bottom:8px;
+  display:flex;flex-direction:column;gap:8px;
+}
+.api-toggle{
+  width:38px;height:20px;border-radius:10px;
+  background:rgba(255,255,255,.1);position:relative;cursor:pointer;
+  transition:background .3s;flex-shrink:0;
+}
+.api-toggle.on{background:var(--green);}
+.api-toggle::after{
+  content:'';position:absolute;width:14px;height:14px;border-radius:50%;
+  background:#fff;top:3px;left:3px;transition:left .3s;
+}
+.api-toggle.on::after{left:21px;}
+.api-edit{
+  padding:4px 10px;border-radius:6px;
+  border:1px solid rgba(212,168,67,.3);
+  background:rgba(212,168,67,.08);
+  color:var(--gold);font-size:.5rem;letter-spacing:1px;cursor:pointer;
+}
+.api-del{
+  padding:4px 10px;border-radius:6px;
+  border:1px solid rgba(255,70,87,.3);
+  background:rgba(255,70,87,.05);
+  color:var(--red);font-size:.5rem;letter-spacing:1px;cursor:pointer;
+}
+.admin-photos-preview{display:flex;gap:6px;overflow-x:auto;}
+.adm-photo{width:44px;height:55px;border-radius:6px;overflow:hidden;border:1px solid rgba(212,168,67,.2);flex-shrink:0;}
+.adm-photo img{width:100%;height:100%;object-fit:cover;}
+
+/* ══ MODAL ══ */
+.modal-overlay{
+  position:fixed;inset:0;z-index:200;
+  background:rgba(0,0,0,.85);backdrop-filter:blur(12px);
+  display:flex;align-items:flex-end;justify-content:center;padding:1rem;
+}
+.modal-overlay.hidden{display:none;}
+.modal{
+  background:#1A0E06;border:1px solid rgba(212,168,67,.3);
+  border-radius:24px 24px 0 0;padding:1.5rem;
+  width:100%;max-width:430px;max-height:88vh;overflow-y:auto;
+}
+.modal-title{font-family:'Playfair Display',serif;font-size:1.2rem;margin-bottom:1.2rem;color:var(--gold);}
+.mfi{
+  background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.1);
+  border-radius:8px;color:var(--text);padding:10px 11px;
+  font-family:'Montserrat',sans-serif;font-size:.78rem;
+  width:100%;outline:none;margin-bottom:10px;
+  -webkit-appearance:none;
+}
+.mfi:focus{border-color:var(--gold);}
+.mfi::placeholder{color:var(--t3);}
+.modal-row{display:grid;grid-template-columns:1fr 1fr;gap:8px;}
+.modal-btns{display:flex;gap:8px;margin-top:1rem;}
+.mbtn{flex:1;padding:.9rem;border-radius:10px;font-size:.65rem;letter-spacing:2px;cursor:pointer;}
+.mbtn.save{border:none;background:linear-gradient(135deg,var(--gold),var(--gold3));color:#1A0A03;font-weight:700;}
+.mbtn.cancel{border:1px solid rgba(255,255,255,.1);background:transparent;color:var(--t2);}
+
+/* PHOTO UPLOAD */
+.photo-section{margin-bottom:12px;}
+.photo-section-title{font-size:.52rem;letter-spacing:2px;color:var(--gold);font-weight:600;margin-bottom:8px;}
+.photo-upload-zone{
+  border:2px dashed rgba(212,168,67,.35);border-radius:12px;padding:1.2rem;
+  text-align:center;cursor:pointer;transition:all .3s;
+  background:rgba(212,168,67,.03);position:relative;overflow:hidden;
+}
+.photo-upload-zone:hover{border-color:var(--gold);background:rgba(212,168,67,.08);}
+.photo-upload-zone input[type=file]{position:absolute;inset:0;opacity:0;cursor:pointer;width:100%;height:100%;}
+.puz-icon{font-size:2rem;margin-bottom:.4rem;}
+.puz-text{font-size:.65rem;color:var(--t2);letter-spacing:1px;}
+.puz-sub{font-size:.55rem;color:var(--t3);margin-top:3px;}
+.photos-preview{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px;}
+.photo-thumb{position:relative;width:72px;height:90px;border-radius:8px;overflow:hidden;border:1px solid rgba(212,168,67,.2);flex-shrink:0;}
+.photo-thumb img{width:100%;height:100%;object-fit:cover;}
+.photo-thumb-del{
+  position:absolute;top:3px;right:3px;width:20px;height:20px;border-radius:50%;
+  background:rgba(255,70,87,.9);border:none;color:#fff;font-size:.6rem;
+  cursor:pointer;display:flex;align-items:center;justify-content:center;
+}
+.main-badge{
+  position:absolute;bottom:3px;left:2px;right:2px;
+  background:rgba(212,168,67,.9);color:#1A0A03;font-size:.42rem;
+  text-align:center;padding:2px;border-radius:3px;font-weight:700;letter-spacing:.5px;
+}
+.photo-order-hint{font-size:.55rem;color:var(--t3);margin-top:6px;text-align:center;}
+.storage-bar{margin-top:8px;}
+.storage-label{font-size:.52rem;color:var(--t3);margin-bottom:4px;display:flex;justify-content:space-between;}
+.storage-track{height:4px;background:rgba(255,255,255,.08);border-radius:2px;overflow:hidden;}
+.storage-fill{height:100%;background:linear-gradient(90deg,var(--gold),var(--gold3));border-radius:2px;transition:width .3s;}
+
+/* Admin PW */
+.admin-pw-wrap{display:flex;flex-direction:column;align-items:center;justify-content:center;flex:1;padding:2rem;text-align:center;}
+.pw-input{
+  background:rgba(255,255,255,.05);border:1px solid rgba(212,168,67,.3);border-radius:10px;
+  color:var(--text);padding:.9rem 1.2rem;font-family:'Montserrat',sans-serif;
+  font-size:.85rem;width:100%;max-width:300px;outline:none;text-align:center;
+  margin-bottom:1rem;letter-spacing:4px;
+}
+.pw-submit{
+  padding:.9rem 2rem;border-radius:10px;border:none;
+  background:linear-gradient(135deg,var(--gold),var(--gold3));
+  color:#1A0A03;font-size:.7rem;letter-spacing:3px;font-weight:700;cursor:pointer;
+}
+.pw-err{color:var(--red);font-size:.65rem;margin-top:.5rem;opacity:0;transition:opacity .3s;}
+.pw-err.show{opacity:1;}
+
+/* SS Guard */
+.ss-guard{
+  position:fixed;inset:0;z-index:99999;background:rgba(10,5,2,.98);
+  display:none;align-items:center;justify-content:center;flex-direction:column;gap:1rem;
+}
+.ss-guard.show{display:flex;}
+body.blurred .main-wrap{filter:blur(25px);}
+.main-wrap{position:relative;z-index:1;height:100%;transition:filter .3s;}
+</style>
+</head>
+<body>
+
+<!-- BG -->
+<div class="bg">
+  <div class="bg-base"></div>
+  <div class="bokeh-wrap">
+    <div class="bk"></div><div class="bk"></div><div class="bk"></div>
+    <div class="bk"></div><div class="bk"></div><div class="bk"></div>
+    <div class="bk"></div><div class="bk"></div><div class="bk"></div><div class="bk"></div>
+  </div>
+  <div class="bg-shimmer"></div>
+</div>
+
+<div class="main-wrap">
+
+<!-- SS GUARD -->
+<div class="ss-guard" id="ss-guard">
+  <div style="font-size:3rem">🚫</div>
+  <div style="font-size:.7rem;letter-spacing:3px;color:var(--gold)">CAPTURE DÉSACTIVÉE</div>
+</div>
+
+<!-- ══ AGE GATE ══ -->
+<div id="age-gate" class="screen">
+  <div style="display:flex;flex-direction:column;align-items:center;justify-content:center;flex:1;padding:2rem;text-align:center;">
+    <div class="age-logo">CERCLE PRIVÉ</div>
+    <div class="age-sub">CONCIERGERIE · LUXE · DISCRÉTION</div>
+    <div class="age-box">
+      <div class="age-icon">🔞</div>
+      <div class="age-title" id="a-title">Accès Réservé aux Adultes</div>
+      <div class="age-text" id="a-text">Ce site contient du contenu réservé aux personnes majeures (+18 ans). En continuant, vous certifiez avoir l'âge légal requis dans votre pays.</div>
+      <button class="btn-enter" onclick="confirmAge()" id="a-yes">J'AI PLUS DE 18 ANS — ENTRER</button>
+      <button class="btn-leave" onclick="denyAge()" id="a-no">Je suis mineur — Quitter</button>
+    </div>
+  </div>
+</div>
+
+<!-- ══ PIN ══ -->
+<div id="pin-screen" class="screen hidden">
+  <div style="display:flex;flex-direction:column;align-items:center;justify-content:center;flex:1;padding:2rem;text-align:center;">
+    <div class="pin-logo">CERCLE PRIVÉ</div>
+    <div class="pin-sub-t">CONCIERGERIE DE LUXE</div>
+    <div class="pin-card">
+      <div class="pin-title" id="pt">Créez votre code secret</div>
+      <div class="pin-dots">
+        <div class="pin-dot" id="d0"></div><div class="pin-dot" id="d1"></div>
+        <div class="pin-dot" id="d2"></div><div class="pin-dot" id="d3"></div>
+      </div>
+      <div class="pin-kp">
+        <div class="pk" onclick="pk('1')">1</div><div class="pk" onclick="pk('2')">2</div><div class="pk" onclick="pk('3')">3</div>
+        <div class="pk" onclick="pk('4')">4</div><div class="pk" onclick="pk('5')">5</div><div class="pk" onclick="pk('6')">6</div>
+        <div class="pk" onclick="pk('7')">7</div><div class="pk" onclick="pk('8')">8</div><div class="pk" onclick="pk('9')">9</div>
+        <div class="pk empty"></div><div class="pk" onclick="pk('0')">0</div><div class="pk del" onclick="pdel()">⌫</div>
+      </div>
+      <button class="bio-btn" id="bio-btn" style="display:none" onclick="tryBio()">🔐 <span id="bio-lbl">Face ID / Empreinte</span></button>
+      <div class="pin-err" id="perr"></div>
+      <div class="pin-mode" id="pmode">Choisissez 4 chiffres</div>
+    </div>
+  </div>
+</div>
+
+<!-- ══ HOME ══ -->
+<div id="home-screen" class="screen hidden">
+  <div class="home-header">
+    <div class="home-brand">CP</div>
+    <div class="home-actions">
+      <button class="theme-btn" onclick="toggleTheme()" id="theme-ic">🌙</button>
+      <select class="lang-sel" onchange="setLang(this.value)" id="lang-sel">
+        <option value="fr">🇫🇷 FR</option>
+        <option value="en">🇬🇧 EN</option>
+        <option value="de">🇩🇪 DE</option>
+        <option value="pt">🇵🇹 PT</option>
+        <option value="es">🇪🇸 ES</option>
+      </select>
+    </div>
+  </div>
+  <div class="home-body">
+    <div class="home-eyebrow">— ✦ CERCLE PRIVÉ ✦ —</div>
+    <div class="home-heading" id="h-heading">Choisissez votre plaisir</div>
+    <div class="cat-cards">
+      <!-- FEMMES -->
+      <div class="cat-card" onclick="showGallery('ladies')">
+        <div class="cat-card-photo">
+          <img src="https://images.unsplash.com/photo-1531746020798-e6953c6e8e04?w=400&q=80&fit=crop&crop=top" alt="Ladies" crossorigin="anonymous" onerror="this.style.display='none'">
+          <div class="cat-card-photo-overlay"></div>
+        </div>
+        <div class="cat-card-content">
+          <div class="cat-card-title" id="h-ladies">FEMMES</div>
+          <button class="cat-explore-btn" id="h-explore1">Explorez</button>
+        </div>
+        <div class="cat-card-glow"></div>
+      </div>
+      <!-- HOMMES -->
+      <div class="cat-card" onclick="showGallery('gents')">
+        <div class="cat-card-photo">
+          <img src="https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=400&q=80&fit=crop&crop=top" alt="Gents" crossorigin="anonymous" onerror="this.style.display='none'">
+          <div class="cat-card-photo-overlay"></div>
+        </div>
+        <div class="cat-card-content">
+          <div class="cat-card-title" id="h-gents">HOMMES</div>
+          <button class="cat-explore-btn" id="h-explore2">Explorez</button>
+        </div>
+        <div class="cat-card-glow"></div>
+      </div>
+    </div>
+    <div class="home-footer" id="h-footer" style="margin-top:1.5rem;">DISCRÉTION ABSOLUE · LUXE · EXCLUSIVITÉ</div>
+  </div>
+</div>
+
+<!-- ══ GALLERY ══ -->
+<div id="gallery-screen" class="screen hidden">
+  <div class="g-header">
+    <div class="g-top">
+      <button class="back-btn" onclick="showScreen('home-screen')">← <span id="g-back">ACCUEIL</span></button>
+    </div>
+    <div class="g-title" id="g-title">Les <span>Ladies</span></div>
+    <div class="filters" id="filt-bar">
+      <div class="filt active" onclick="doFilter('all',this)" id="f-all">Tous</div>
+      <div class="filt" onclick="doFilter('Paris',this)">Paris</div>
+      <div class="filt" onclick="doFilter('Lyon',this)">Lyon</div>
+      <div class="filt" onclick="doFilter('Nice',this)">Nice</div>
+      <div class="filt" onclick="doFilter('Marseille',this)">Marseille</div>
+      <div class="filt" onclick="doFilter('FR',this)">FR</div>
+      <div class="filt" onclick="doFilter('EN',this)">EN</div>
+      <div class="filt" onclick="doFilter('DE',this)">DE</div>
+    </div>
+  </div>
+  <div class="g-body"><div class="pgrid" id="pgrid"></div></div>
+</div>
+
+<!-- ══ FAVORITES ══ -->
+<div id="fav-screen" class="screen hidden">
+  <div class="fav-header"><div class="fav-title">Mes <span>Favoris</span> ❤️</div></div>
+  <div class="fav-body" id="fav-body"></div>
+</div>
+
+<!-- ══ RESERVATIONS ══ -->
+<div id="resa-screen" class="screen hidden">
+  <div class="resa-header"><div class="resa-title">Mes <span>Réservations</span></div></div>
+  <div class="resa-body">
+    <div class="resa-empty">
+      <div style="font-size:3.5rem;margin-bottom:1rem;opacity:.25;">📅</div>
+      <div class="resa-hint" id="resa-hint">Vos réservations WhatsApp confirmées apparaîtront ici...</div>
+    </div>
+  </div>
+</div>
+
+<!-- ══ PROFILE DETAIL ══ -->
+<div id="profile-screen" class="screen hidden">
+  <div class="ph-wrap" id="ph-wrap">
+    <div class="ph-slides" id="ph-slides"></div>
+    <div class="ph-overlay"></div>
+    <div class="ph-back" onclick="backFromProfile()">←</div>
+    <div class="ph-fav" id="ph-fav" onclick="toggleFavP()">🤍</div>
+    <div class="ph-dots" id="ph-dots"></div>
+    <div class="ph-info">
+      <div class="ph-name" id="ph-name"></div>
+      <div class="ph-meta" id="ph-meta"></div>
+    </div>
+  </div>
+  <div class="pbody">
+    <div class="stats-row">
+      <div class="stat"><div class="stat-v" id="sv-rate"></div><div class="stat-l" id="sl-rate">TARIF/H</div></div>
+      <div class="stat"><div class="stat-v" id="sv-age"></div><div class="stat-l" id="sl-age">ÂGE</div></div>
+      <div class="stat"><div class="stat-v" id="sv-city"></div><div class="stat-l" id="sl-city">VILLE</div></div>
+    </div>
+    <div class="sc"><div class="sl" id="p-bio-lbl">BIOGRAPHIE</div><div class="bio-t" id="p-bio"></div></div>
+    <div class="sc"><div class="sl" id="p-lang-lbl">LANGUES & INTÉRÊTS</div><div class="tags" id="p-tags"></div></div>
+    <div class="sc">
+      <div class="sl" id="p-book-lbl">RÉSERVATION</div>
+      <div class="fg-row">
+        <div class="fg"><label class="fl" id="fl-ps">PSEUDONYME</label><input type="text" class="fi" id="b-ps" placeholder="Votre prénom"></div>
+        <div class="fg"><label class="fl" id="fl-vl">LIEU DU RDV</label><input type="text" class="fi" id="b-vl" placeholder="Ville / Adresse"></div>
+      </div>
+      <div class="fg-row">
+        <div class="fg"><label class="fl" id="fl-dt">DATE</label><input type="date" class="fi" id="b-dt"></div>
+        <div class="fg"><label class="fl" id="fl-hr">HEURE</label><input type="time" class="fi" id="b-hr" value="20:00"></div>
+      </div>
+      <div class="fg">
+        <label class="fl" id="fl-dr">DURÉE</label>
+        <select class="fs" id="b-dr" onchange="calcP()">
+          <option value="1,1">1 heure</option>
+          <option value="2,2">2 heures</option>
+          <option value="3,3">3 heures</option>
+          <option value="4,4">4 heures</option>
+          <option value="8,6">Nuit complète (forfait)</option>
+        </select>
+      </div>
+      <div class="price-c">
+        <div class="price-l" id="pl">TOTAL ESTIMÉ</div>
+        <div class="price-v" id="pv">200€</div>
+        <div class="price-b" id="pb">1h × 200€/h</div>
+      </div>
+      <button class="wa-btn" onclick="bookWA()">💬 <span id="wa-t">RÉSERVER VIA WHATSAPP</span></button>
+    </div>
+  </div>
+</div>
+
+<!-- ══ SETTINGS ══ -->
+<div id="settings-screen" class="screen hidden">
+  <div class="set-header"><div class="set-title">Réglages</div></div>
+  <div class="set-body">
+    <div class="set-sect">
+      <div class="set-sect-t">LANGUE</div>
+      <div class="lang-grid">
+        <div class="lang-opt active" onclick="setLangOpt('fr',this)" id="lo-fr"><div class="lang-flag">🇫🇷</div><div class="lang-name">FR</div></div>
+        <div class="lang-opt" onclick="setLangOpt('en',this)" id="lo-en"><div class="lang-flag">🇬🇧</div><div class="lang-name">EN</div></div>
+        <div class="lang-opt" onclick="setLangOpt('de',this)" id="lo-de"><div class="lang-flag">🇩🇪</div><div class="lang-name">DE</div></div>
+        <div class="lang-opt" onclick="setLangOpt('pt',this)" id="lo-pt"><div class="lang-flag">🇵🇹</div><div class="lang-name">PT</div></div>
+        <div class="lang-opt" onclick="setLangOpt('es',this)" id="lo-es"><div class="lang-flag">🇪🇸</div><div class="lang-name">ES</div></div>
+      </div>
+    </div>
+    <div class="set-sect">
+      <div class="set-sect-t">APPARENCE</div>
+      <div class="set-item" onclick="toggleTheme()">
+        <div class="set-item-l"><div class="set-item-ic">🌗</div><span>Mode Nuit / Jour</span></div>
+        <div class="toggle" id="theme-toggle"></div>
+      </div>
+    </div>
+    <div class="set-sect">
+      <div class="set-sect-t">SÉCURITÉ</div>
+      <div class="set-item" onclick="resetPin()">
+        <div class="set-item-l"><div class="set-item-ic">🔐</div><span>Modifier le code PIN</span></div>
+        <div class="set-item-r">›</div>
+      </div>
+      <div class="set-item" onclick="toggleBio()">
+        <div class="set-item-l"><div class="set-item-ic">👁</div><span>Face ID / Empreinte</span></div>
+        <div class="toggle" id="bio-toggle"></div>
+      </div>
+    </div>
+    <div class="set-sect">
+      <div class="set-sect-t">ADMINISTRATION</div>
+      <button class="admin-btn" onclick="showAdminLogin()">🔑 ESPACE ADMINISTRATEUR</button>
+    </div>
+    <div style="text-align:center;padding:.5rem;font-size:.55rem;color:var(--t3);">Cercle Privé v4.0 · CalcPro</div>
+  </div>
+</div>
+
+<!-- ══ ADMIN ══ -->
+<div id="admin-screen" class="screen hidden">
+  <div id="admin-login-wrap" style="display:flex;flex-direction:column;align-items:center;justify-content:center;flex:1;padding:2rem;text-align:center;">
+    <div style="font-family:'Playfair Display',serif;font-size:1.5rem;color:var(--gold);margin-bottom:.3rem;">Administration</div>
+    <div style="font-size:.58rem;letter-spacing:3px;color:var(--t3);margin-bottom:2.5rem;">ACCÈS RESTREINT</div>
+    <input type="password" class="pw-input" id="admin-pw" placeholder="••••••••" autocomplete="off">
+    <button class="pw-submit" onclick="checkAdminPw()">ACCÉDER</button>
+    <div class="pw-err" id="pw-err">Code administrateur incorrect</div>
+    <button onclick="showScreen('settings-screen')" style="margin-top:1.5rem;background:none;border:none;color:var(--t3);font-size:.65rem;cursor:pointer;">← Retour</button>
+  </div>
+  <div id="admin-panel" style="display:none;flex-direction:column;height:100%;">
+    <div class="admin-header">
+      <div style="display:flex;align-items:center;justify-content:space-between;">
+        <div><div class="admin-title">Back Office</div><div class="admin-sub">CERCLE PRIVÉ · ADMIN</div></div>
+        <button onclick="showScreen('settings-screen')" style="background:none;border:1px solid rgba(255,255,255,.1);border-radius:8px;padding:6px 12px;color:var(--t3);font-size:.58rem;cursor:pointer;">← QUITTER</button>
+      </div>
+    </div>
+    <div class="admin-body">
+      <div class="stats-grid">
+        <div class="stat-card"><div class="sc-val" id="adm-total">20</div><div class="sc-lbl">PROFILS TOTAL</div></div>
+        <div class="stat-card"><div class="sc-val" id="adm-active">20</div><div class="sc-lbl">PROFILS ACTIFS</div></div>
+        <div class="stat-card"><div class="sc-val" id="adm-favs">0</div><div class="sc-lbl">FAVORIS CLIENTS</div></div>
+        <div class="stat-card"><div class="sc-val" id="adm-lang">FR</div><div class="sc-lbl">LANGUE ACTUELLE</div></div>
+      </div>
+      <div class="admin-sect-t"><span>LADIES</span><button class="add-btn" onclick="openAddModal('ladies')">+ AJOUTER</button></div>
+      <div id="adm-ladies"></div>
+      <div class="admin-sect-t"><span>GENTLEMEN</span><button class="add-btn" onclick="openAddModal('gents')">+ AJOUTER</button></div>
+      <div id="adm-gents"></div>
+    </div>
+  </div>
+</div>
+
+<!-- ══ DOCK ══ -->
+<nav class="dock" id="dock">
+  <div class="dock-item active" id="di-home" onclick="dockNav('home')">
+    <div class="dock-icon">🏠</div><span id="dn-home">ACCUEIL</span>
+  </div>
+  <div class="dock-item" id="di-profiles" onclick="dockNav('profiles')">
+    <div class="dock-icon">👥</div><span id="dn-profiles">PROFILS</span>
+  </div>
+  <div class="dock-item" id="di-favs" onclick="dockNav('favs')">
+    <div class="dock-icon-wrap">
+      <div class="dock-icon">❤️</div>
+      <span class="dock-badge" id="fav-badge" style="display:none">0</span>
+    </div>
+    <span id="dn-favs">FAVORIS</span>
+  </div>
+  <div class="dock-item" id="di-resa" onclick="dockNav('resa')">
+    <div class="dock-icon">📅</div><span id="dn-resa">RÉSERVATIONS</span>
+  </div>
+  <div class="dock-item" id="di-settings" onclick="dockNav('settings')">
+    <div class="dock-icon">⚙️</div><span id="dn-settings">RÉGLAGES</span>
+  </div>
+</nav>
+
+<!-- ══ EDIT MODAL ══ -->
+<div class="modal-overlay hidden" id="edit-modal">
+  <div class="modal">
+    <div class="modal-title" id="modal-title">Nouveau profil</div>
+    <input type="hidden" id="m-id"><input type="hidden" id="m-cat">
+    <div class="photo-section">
+      <div class="photo-section-title">📸 PHOTOS DU PROFIL (max 5)</div>
+      <div class="photo-upload-zone">
+        <input type="file" id="photo-input" accept="image/*" multiple onchange="handlePhotoUpload(this)">
+        <div class="puz-icon">📷</div>
+        <div class="puz-text">APPUYEZ POUR AJOUTER DES PHOTOS</div>
+        <div class="puz-sub">Depuis votre téléphone · JPG, PNG, WebP</div>
+      </div>
+      <div class="photos-preview" id="photos-preview"></div>
+      <div class="photo-order-hint" id="photo-hint" style="display:none">1ère photo = photo principale · ✕ pour supprimer</div>
+      <div class="storage-bar">
+        <div class="storage-label"><span>Stockage utilisé</span><span id="storage-used">0 KB</span></div>
+        <div class="storage-track"><div class="storage-fill" id="storage-fill" style="width:0%"></div></div>
+      </div>
+    </div>
+    <div class="modal-row">
+      <input type="text" class="mfi" id="m-name" placeholder="Nom / Prénom">
+      <input type="number" class="mfi" id="m-age" placeholder="Âge">
+    </div>
+    <div class="modal-row">
+      <input type="text" class="mfi" id="m-city" placeholder="Ville">
+      <input type="number" class="mfi" id="m-rate" placeholder="Tarif €/h">
+    </div>
+    <input type="text" class="mfi" id="m-emoji" placeholder="Emoji si pas de photo (ex: 👩)">
+    <input type="text" class="mfi" id="m-langs" placeholder="Langues (ex: FR,EN,DE)">
+    <input type="text" class="mfi" id="m-interests" placeholder="Intérêts (ex: Voyage,Art)">
+    <textarea class="mfi" id="m-bio" placeholder="Biographie..." rows="3" style="resize:none;"></textarea>
+    <div class="modal-btns">
+      <button class="mbtn cancel" onclick="closeModal()">ANNULER</button>
+      <button class="mbtn save" onclick="saveProfile()">SAUVEGARDER</button>
+    </div>
+  </div>
+</div>
+
+<script>
+// ══════════════════════════════════════════════════
+// DATA
+// ══════════════════════════════════════════════════
+const defaultLadies=[
+  {id:'L1',name:'Sofia',age:24,city:'Paris',rate:200,verified:true,active:true,emoji:'👩🏻',emojis:['👩🏻','🌹','✨'],photos:[],langs:['FR','EN'],interests:['Voyage','Gastronomie','Art'],bio:'Élégante et cultivée, Sofia offre une présence raffinée lors de vos soirées les plus exclusives. Diplômée en lettres, elle conjugue intelligence et charme naturel.'},
+  {id:'L2',name:'Léa',age:27,city:'Lyon',rate:180,verified:true,active:true,emoji:'💃',emojis:['💃','🎨','🌸'],photos:[],langs:['FR','ES'],interests:['Art','Danse','Cinéma'],bio:'Passionnée d\'art contemporain, Léa vous accompagnera dans les galeries et événements culturels avec une élégance incomparable.'},
+  {id:'L3',name:'Camille',age:25,city:'Bordeaux',rate:160,verified:true,active:true,emoji:'🌹',emojis:['🌹','🍷','🎶'],photos:[],langs:['FR','EN'],interests:['Œnologie','Musique','Lecture'],bio:'Amatrice de grands crus, Camille transforme chaque dîner en une expérience sensorielle mémorable.'},
+  {id:'L4',name:'Yasmine',age:28,city:'Marseille',rate:190,verified:true,active:true,emoji:'🌙',emojis:['🌙','🧘','🎭'],photos:[],langs:['FR','AR','EN'],interests:['Yoga','Cinéma','Voyage'],bio:'Trilingue et cosmopolite, Yasmine apporte une touche d\'exotisme et de sophistication.'},
+  {id:'L5',name:'Elena',age:26,city:'Nice',rate:220,verified:true,active:true,emoji:'✨',emojis:['✨','👗','📸'],photos:[],langs:['EN','IT','FR'],interests:['Mode','Photographie','Luxe'],bio:'Originaire de Milan, Elena incarne l\'élégance transalpine. Ex-mannequin, elle maîtrise l\'art de la présence.'},
+  {id:'L6',name:'Jade',age:23,city:'Toulouse',rate:150,verified:false,active:true,emoji:'🌸',emojis:['🌸','📚','🍽️'],photos:[],langs:['FR','EN'],interests:['Lecture','Gastronomie','Nature'],bio:'Jeune et pétillante, Jade apporte fraîcheur et spontanéité lors de chaque rencontre.'},
+  {id:'L7',name:'Naomi',age:29,city:'Strasbourg',rate:200,verified:true,active:true,emoji:'🦋',emojis:['🦋','🎼','✈️'],photos:[],langs:['FR','EN','DE'],interests:['Opéra','Voyage','Architecture'],bio:'Trilingue franco-allemande, Naomi est à l\'aise dans les environnements internationaux.'},
+  {id:'L8',name:'Inès',age:25,city:'Nantes',rate:170,verified:true,active:true,emoji:'🌊',emojis:['🌊','⛵','🏃'],photos:[],langs:['FR','ES'],interests:['Voile','Sport','Bien-être'],bio:'Sportive et dynamique, Inès rayonne d\'une énergie positive contagieuse.'},
+  {id:'L9',name:'Chloé',age:27,city:'Lille',rate:160,verified:true,active:true,emoji:'🎭',emojis:['🎭','📖','🎨'],photos:[],langs:['FR','EN'],interests:['Théâtre','Littérature','Dessin'],bio:'Comédienne de formation, Chloé possède une présence scénique remarquable.'},
+  {id:'L10',name:'Amara',age:26,city:'Rennes',rate:180,verified:true,active:true,emoji:'⭐',emojis:['⭐','🎷','🍽️'],photos:[],langs:['FR','EN'],interests:['Jazz','Gastronomie','Danse'],bio:'Amatrice de jazz et de bonne table, Amara apporte une chaleur et une authenticité rares.'},
+];
+const defaultGents=[
+  {id:'G1',name:'Alexandre',age:30,city:'Paris',rate:200,verified:true,active:true,emoji:'🎩',emojis:['🎩','💼','⛳'],photos:[],langs:['FR','EN'],interests:['Business','Golf','Vins'],bio:'Ex-consultant en stratégie internationale, Alexandre maîtrise les codes du monde des affaires.'},
+  {id:'G2',name:'Maxime',age:28,city:'Lyon',rate:180,verified:true,active:true,emoji:'🍷',emojis:['🍷','💡','🌍'],photos:[],langs:['FR','ES'],interests:['Gastronomie','Investissement','Voyage'],bio:'Entrepreneur et gastronome, Maxime saura partager sa passion pour les mets raffinés.'},
+  {id:'G3',name:'Théo',age:27,city:'Bordeaux',rate:160,verified:true,active:true,emoji:'🎸',emojis:['🎸','🎨','🌿'],photos:[],langs:['FR','EN'],interests:['Musique','Art','Nature'],bio:'Musicien et artiste dans l\'âme, Théo apporte créativité et sensibilité à chaque rencontre.'},
+  {id:'G4',name:'Karim',age:31,city:'Marseille',rate:190,verified:true,active:true,emoji:'🏛️',emojis:['🏛️','🌍','📐'],photos:[],langs:['FR','AR','EN'],interests:['Architecture','Voyage','Gastronomie'],bio:'Architecte de renom, Karim possède un regard unique sur la beauté des espaces.'},
+  {id:'G5',name:'Lorenzo',age:29,city:'Nice',rate:220,verified:true,active:true,emoji:'⛵',emojis:['⛵','🤌','🌊'],photos:[],langs:['EN','IT','FR'],interests:['Voile','Art de vivre','Luxe'],bio:'Passionné de voile et de la Méditerranée, Lorenzo incarne l\'art de vivre à l\'italienne.'},
+  {id:'G6',name:'Nathan',age:26,city:'Toulouse',rate:150,verified:false,active:true,emoji:'✈️',emojis:['✈️','🌐','⌚'],photos:[],langs:['FR','EN'],interests:['Aviation','Technologie','Montres'],bio:'Pilote de ligne passionné, Nathan allie rigueur professionnelle et charme naturel.'},
+  {id:'G7',name:'Lucas',age:32,city:'Strasbourg',rate:200,verified:true,active:true,emoji:'⚖️',emojis:['⚖️','🇪🇺','📚'],photos:[],langs:['FR','EN','DE'],interests:['Droit européen','Politique','Littérature'],bio:'Juriste européen, Lucas navigue avec aisance dans les milieux diplomatiques.'},
+  {id:'G8',name:'Hugo',age:28,city:'Nantes',rate:170,verified:true,active:true,emoji:'🏇',emojis:['🏇','🎯','🌿'],photos:[],langs:['FR','ES'],interests:['Polo','Équitation','Nature'],bio:'Cavalier accompli et sportif élégant, Hugo apporte dynamisme et noblesse.'},
+  {id:'G9',name:'Romain',age:27,city:'Lille',rate:160,verified:true,active:true,emoji:'🎬',emojis:['🎬','📷','🎨'],photos:[],langs:['FR','EN'],interests:['Cinéma','Photographie','Design'],bio:'Réalisateur en devenir, Romain capte la beauté du monde avec un regard singulier.'},
+  {id:'G10',name:'Sébastien',age:30,city:'Rennes',rate:180,verified:true,active:true,emoji:'🌍',emojis:['🌍','🍳','❤️'],photos:[],langs:['FR','EN'],interests:['Philanthropie','Cuisine','Humanisme'],bio:'Engagé et cultivé, Sébastien est un humaniste moderne au charme authentique.'},
+];
+
+// ══════════════════════════════════════════════════
+// TRANSLATIONS
+// ══════════════════════════════════════════════════
+const TX={
+  fr:{heading:'Choisissez votre plaisir',ladies:'FEMMES',gents:'HOMMES',explore:'Explorez',footer:'DISCRÉTION ABSOLUE · LUXE · EXCLUSIVITÉ',ageTitle:'Accès Réservé aux Adultes',ageText:'Ce site contient du contenu réservé aux personnes majeures (+18 ans). En continuant, vous certifiez avoir l\'âge légal requis.',ageYes:'J\'AI PLUS DE 18 ANS — ENTRER',ageNo:'Je suis mineur — Quitter',pinCreate:'Créez votre code secret',pinConfirm:'Confirmez votre code',pinVerify:'Entrez votre code',pinHint:'Choisissez 4 chiffres',pinMismatch:'Les codes ne correspondent pas',pinWrong:'Code incorrect. Réessayez.',bioLbl:'Face ID / Empreinte',home:'ACCUEIL',profiles:'PROFILS',favs:'FAVORIS',resa:'RÉSERVATIONS',settings:'RÉGLAGES',bio:'BIOGRAPHIE',langs:'LANGUES & INTÉRÊTS',book:'RÉSERVATION',pseudo:'PSEUDONYME',ville:'LIEU DU RDV',date:'DATE',heure:'HEURE',duree:'DURÉE',total:'TOTAL ESTIMÉ',wabtn:'RÉSERVER VIA WHATSAPP',rateL:'TARIF/H',ageL:'ÂGE',cityL:'VILLE',wa:(n,d,h,dur,v,ps,p)=>`Bonjour Cercle Privé,\n\nJe souhaite faire une réservation :\n\n👤 Pseudonyme : ${ps}\n💫 Prestataire : ${n}\n📅 Date : ${d}\n⏰ Heure : ${h}\n⏳ Durée : ${dur}\n📍 Lieu : ${v}\n💰 Total estimé : ${p}€\n\nMerci de confirmer.`},
+  en:{heading:'Choose your pleasure',ladies:'LADIES',gents:'GENTLEMEN',explore:'Explore',footer:'ABSOLUTE DISCRETION · LUXURY · EXCLUSIVITY',ageTitle:'Adults Only Access',ageText:'This site contains content for adults only (+18). By continuing, you confirm you are of legal age.',ageYes:'I AM 18+ — ENTER',ageNo:'I am a minor — Leave',pinCreate:'Create your secret PIN',pinConfirm:'Confirm your PIN',pinVerify:'Enter your PIN',pinHint:'Choose 4 digits',pinMismatch:'PINs do not match',pinWrong:'Incorrect PIN. Try again.',bioLbl:'Face ID / Fingerprint',home:'HOME',profiles:'PROFILES',favs:'FAVORITES',resa:'BOOKINGS',settings:'SETTINGS',bio:'BIOGRAPHY',langs:'LANGUAGES & INTERESTS',book:'BOOKING',pseudo:'NICKNAME',ville:'MEETING LOCATION',date:'DATE',heure:'TIME',duree:'DURATION',total:'ESTIMATED TOTAL',wabtn:'BOOK VIA WHATSAPP',rateL:'RATE/H',ageL:'AGE',cityL:'CITY',wa:(n,d,h,dur,v,ps,p)=>`Hello Cercle Privé,\n\nI would like to make a booking:\n\n👤 Nickname: ${ps}\n💫 Companion: ${n}\n📅 Date: ${d}\n⏰ Time: ${h}\n⏳ Duration: ${dur}\n📍 Location: ${v}\n💰 Estimated total: ${p}€\n\nPlease confirm.`},
+  de:{heading:'Wählen Sie Ihr Vergnügen',ladies:'DAMEN',gents:'HERREN',explore:'Entdecken',footer:'ABSOLUTE DISKRETION · LUXUS · EXKLUSIVITÄT',ageTitle:'Nur für Erwachsene',ageText:'Diese Website enthält Inhalte für Erwachsene (+18). Mit dem Fortfahren bestätigen Sie Ihr Alter.',ageYes:'ICH BIN 18+ — EINTRETEN',ageNo:'Ich bin minderjährig',pinCreate:'PIN erstellen',pinConfirm:'PIN bestätigen',pinVerify:'PIN eingeben',pinHint:'4 Ziffern wählen',pinMismatch:'PINs stimmen nicht überein',pinWrong:'Falscher PIN.',bioLbl:'Face ID / Fingerabdruck',home:'START',profiles:'PROFILE',favs:'FAVORITEN',resa:'BUCHUNGEN',settings:'EINSTELLUNGEN',bio:'BIOGRAFIE',langs:'SPRACHEN & INTERESSEN',book:'BUCHUNG',pseudo:'PSEUDONYM',ville:'TREFFPUNKT',date:'DATUM',heure:'UHRZEIT',duree:'DAUER',total:'GESCHÄTZTES GESAMT',wabtn:'VIA WHATSAPP BUCHEN',rateL:'TARIF/H',ageL:'ALTER',cityL:'STADT',wa:(n,d,h,dur,v,ps,p)=>`Hallo Cercle Privé,\n\nBuchungsanfrage:\n\n👤 ${ps}\n💫 ${n}\n📅 ${d} ⏰ ${h}\n⏳ ${dur}\n📍 ${v}\n💰 ${p}€`},
+  pt:{heading:'Escolha o seu prazer',ladies:'MULHERES',gents:'HOMENS',explore:'Explorar',footer:'DISCRIÇÃO ABSOLUTA · LUXO · EXCLUSIVIDADE',ageTitle:'Acesso Restrito a Adultos',ageText:'Este site contém conteúdo para maiores de 18 anos. Ao continuar confirma a sua idade.',ageYes:'TENHO 18+ ANOS — ENTRAR',ageNo:'Sou menor — Sair',pinCreate:'Crie o seu PIN',pinConfirm:'Confirme o PIN',pinVerify:'Digite o PIN',pinHint:'Escolha 4 dígitos',pinMismatch:'PINs não coincidem',pinWrong:'PIN incorreto.',bioLbl:'Face ID / Impressão',home:'INÍCIO',profiles:'PERFIS',favs:'FAVORITOS',resa:'RESERVAS',settings:'DEFINIÇÕES',bio:'BIOGRAFIA',langs:'IDIOMAS & INTERESSES',book:'RESERVA',pseudo:'PSEUDÔNIMO',ville:'LOCAL',date:'DATA',heure:'HORA',duree:'DURAÇÃO',total:'TOTAL ESTIMADO',wabtn:'RESERVAR VIA WHATSAPP',rateL:'TARIFA/H',ageL:'IDADE',cityL:'CIDADE',wa:(n,d,h,dur,v,ps,p)=>`Olá Cercle Privé,\n\nReserva:\n\n👤 ${ps}\n💫 ${n}\n📅 ${d} ⏰ ${h}\n⏳ ${dur}\n📍 ${v}\n💰 ${p}€`},
+  es:{heading:'Elige tu placer',ladies:'MUJERES',gents:'HOMBRES',explore:'Explorar',footer:'DISCRECIÓN ABSOLUTA · LUJO · EXCLUSIVIDAD',ageTitle:'Solo para Adultos',ageText:'Este sitio contiene contenido para mayores de 18 años. Al continuar confirma su edad.',ageYes:'TENGO 18+ — ENTRAR',ageNo:'Soy menor — Salir',pinCreate:'Crea tu PIN',pinConfirm:'Confirma el PIN',pinVerify:'Introduce el PIN',pinHint:'Elige 4 dígitos',pinMismatch:'Los códigos no coinciden',pinWrong:'Código incorrecto.',bioLbl:'Face ID / Huella',home:'INICIO',profiles:'PERFILES',favs:'FAVORITOS',resa:'RESERVAS',settings:'AJUSTES',bio:'BIOGRAFÍA',langs:'IDIOMAS & INTERESES',book:'RESERVA',pseudo:'SEUDÓNIMO',ville:'LUGAR',date:'FECHA',heure:'HORA',duree:'DURACIÓN',total:'TOTAL ESTIMADO',wabtn:'RESERVAR VÍA WHATSAPP',rateL:'TARIFA/H',ageL:'EDAD',cityL:'CIUDAD',wa:(n,d,h,dur,v,ps,p)=>`Hola Cercle Privé,\n\nReserva:\n\n👤 ${ps}\n💫 ${n}\n📅 ${d} ⏰ ${h}\n⏳ ${dur}\n📍 ${v}\n💰 ${p}€`},
+};
+
+// ══════════════════════════════════════════════════
+// STATE
+// ══════════════════════════════════════════════════
+let lang='fr',theme='dark',currentCat='ladies',currentProfile=null,currentFilter='all',heroIdx=0;
+let pinBuf='',pinStep='create',firstPin='';
+let savedPin=localStorage.getItem('cp_pin')||'';
+let bioEnabled=localStorage.getItem('cp_bio')==='1';
+let favorites=JSON.parse(localStorage.getItem('cp_favs')||'[]');
+let ladies=JSON.parse(localStorage.getItem('cp_ladies'))||JSON.parse(JSON.stringify(defaultLadies));
+let gents=JSON.parse(localStorage.getItem('cp_gents'))||JSON.parse(JSON.stringify(defaultGents));
+let adminUnlocked=false,editingId=null,editingCat=null,prevProfileCat='ladies';
+let currentPhotos=[];
+const ADMIN_PW='@Cp-425869199%';
+
+// ══════════════════════════════════════════════════
+// ANTI-SCREENSHOT
+// ══════════════════════════════════════════════════
+document.addEventListener('visibilitychange',()=>document.body.classList.toggle('blurred',document.hidden));
+window.addEventListener('blur',()=>document.body.classList.add('blurred'));
+window.addEventListener('focus',()=>document.body.classList.remove('blurred'));
+document.addEventListener('keydown',e=>{
+  if((e.metaKey||e.ctrlKey)&&(e.key==='p'||e.key==='s'))e.preventDefault();
+  if(e.key==='PrintScreen'){e.preventDefault();const g=document.getElementById('ss-guard');g.classList.add('show');setTimeout(()=>g.classList.remove('show'),2000);}
+});
+
+// ══════════════════════════════════════════════════
+// LANG AUTO-DETECT
+// ══════════════════════════════════════════════════
+(()=>{
+  const bl=navigator.language||'fr';
+  const map={fr:'fr',en:'en',de:'de',pt:'pt',es:'es'};
+  lang=localStorage.getItem('cp_lang')||map[bl.slice(0,2)]||'fr';
+  applyLang();
+})();
+
+function setLang(l){lang=l;localStorage.setItem('cp_lang',l);applyLang();document.querySelectorAll('.lang-opt').forEach(o=>o.classList.remove('active'));const lo=document.getElementById('lo-'+l);if(lo)lo.classList.add('active');const sel=document.getElementById('lang-sel');if(sel)sel.value=l;}
+function setLangOpt(l,el){setLang(l);}
+function applyLang(){
+  const t=TX[lang]||TX.fr;
+  const set=(id,v)=>{const e=document.getElementById(id);if(e)e.textContent=v;};
+  set('a-title',t.ageTitle);set('a-text',t.ageText);set('a-yes',t.ageYes);set('a-no',t.ageNo);
+  set('h-heading',t.heading);set('h-ladies',t.ladies);set('h-gents',t.gents);
+  set('h-explore1',t.explore);set('h-explore2',t.explore);set('h-footer',t.footer);
+  set('dn-home',t.home);set('dn-profiles',t.profiles);set('dn-favs',t.favs);set('dn-resa',t.resa);set('dn-settings',t.settings);
+  set('pt',savedPin?t.pinVerify:t.pinCreate);set('pmode',t.pinHint);set('bio-lbl',t.bioLbl);
+  set('p-bio-lbl',t.bio);set('p-lang-lbl',t.langs);set('p-book-lbl',t.book);
+  set('fl-ps',t.pseudo);set('fl-vl',t.ville);set('fl-dt',t.date);set('fl-hr',t.heure);set('fl-dr',t.duree);
+  set('pl',t.total);set('wa-t',t.wabtn);set('sl-rate',t.rateL);set('sl-age',t.ageL);set('sl-city',t.cityL);
+  set('resa-hint','Vos réservations WhatsApp confirmées apparaîtront ici...');
+}
+
+// ══════════════════════════════════════════════════
+// THEME
+// ══════════════════════════════════════════════════
+function toggleTheme(){
+  theme=theme==='dark'?'light':'dark';
+  document.body.style.background=theme==='light'?'#F5EDE0':'';
+  document.getElementById('theme-ic').textContent=theme==='dark'?'🌙':'☀️';
+  document.getElementById('theme-toggle').classList.toggle('on',theme==='light');
+  localStorage.setItem('cp_theme',theme);
+}
+(()=>{const st=localStorage.getItem('cp_theme');if(st==='light'){theme='light';document.body.style.background='#F5EDE0';document.getElementById('theme-ic').textContent='☀️';}})();
+
+// ══════════════════════════════════════════════════
+// SCREENS
+// ══════════════════════════════════════════════════
+function showScreen(id){
+  document.querySelectorAll('.screen').forEach(s=>s.classList.add('hidden'));
+  document.getElementById(id).classList.remove('hidden');
+  const noDock=['age-gate','pin-screen'];
+  document.getElementById('dock').style.display=noDock.includes(id)?'none':'flex';
+  const map={'home-screen':'di-home','gallery-screen':'di-profiles','fav-screen':'di-favs','resa-screen':'di-resa','settings-screen':'di-settings','profile-screen':'di-profiles','admin-screen':'di-settings'};
+  document.querySelectorAll('.dock-item').forEach(d=>d.classList.remove('active'));
+  const a=map[id];if(a)document.getElementById(a).classList.add('active');
+}
+function dockNav(t){
+  if(t==='home')showScreen('home-screen');
+  else if(t==='profiles')showGallery(currentCat);
+  else if(t==='favs'){renderFavs();showScreen('fav-screen');}
+  else if(t==='resa')showScreen('resa-screen');
+  else if(t==='settings')showScreen('settings-screen');
+}
+
+// ══════════════════════════════════════════════════
+// AGE GATE
+// ══════════════════════════════════════════════════
+function confirmAge(){sessionStorage.setItem('cp_age','ok');initPin();}
+function denyAge(){document.body.innerHTML='<div style="display:flex;align-items:center;justify-content:center;height:100vh;font-family:serif;color:#555;text-align:center;padding:2rem;background:#f5f0e8;"><p>Ce contenu n\'est pas accessible aux mineurs.</p></div>';}
+
+// ══════════════════════════════════════════════════
+// PIN
+// ══════════════════════════════════════════════════
+function initPin(){
+  showScreen('pin-screen');
+  const t=TX[lang];
+  if(savedPin){pinStep='verify';document.getElementById('pt').textContent=t.pinVerify;}
+  else{pinStep='create';document.getElementById('pt').textContent=t.pinCreate;}
+  const bio=document.getElementById('bio-btn');
+  bio.style.display=(bioEnabled&&savedPin)?'flex':'none';
+}
+function pk(d){if(pinBuf.length>=4)return;pinBuf+=d;updDots();if(pinBuf.length===4)setTimeout(processPin,280);}
+function pdel(){pinBuf=pinBuf.slice(0,-1);updDots();}
+function updDots(){for(let i=0;i<4;i++)document.getElementById('d'+i).classList.toggle('filled',i<pinBuf.length);}
+function pinErr(msg){const e=document.getElementById('perr');e.textContent=msg;e.classList.add('show');setTimeout(()=>e.classList.remove('show'),2200);}
+function processPin(){
+  const t=TX[lang];
+  if(!savedPin){
+    if(pinStep==='create'){firstPin=pinBuf;pinBuf='';updDots();pinStep='confirm';document.getElementById('pt').textContent=t.pinConfirm;}
+    else{if(pinBuf===firstPin){savedPin=pinBuf;localStorage.setItem('cp_pin',savedPin);showScreen('home-screen');}else{pinErr(t.pinMismatch);pinStep='create';firstPin='';pinBuf='';updDots();document.getElementById('pt').textContent=t.pinCreate;}}
+  }else{
+    if(pinBuf===savedPin)showScreen('home-screen');
+    else{pinErr(t.pinWrong);pinBuf='';updDots();}
+  }
+}
+function tryBio(){pinErr('Utilisez votre PIN ou biométrie');}
+function toggleBio(){bioEnabled=!bioEnabled;localStorage.setItem('cp_bio',bioEnabled?'1':'0');document.getElementById('bio-toggle').classList.toggle('on',bioEnabled);}
+function resetPin(){if(confirm('Réinitialiser le code PIN ?')){savedPin='';firstPin='';pinBuf='';pinStep='create';localStorage.removeItem('cp_pin');initPin();}}
+
+// ══════════════════════════════════════════════════
+// GALLERY
+// ══════════════════════════════════════════════════
+function showGallery(cat){
+  currentCat=cat;currentFilter='all';
+  const t=TX[lang];
+  document.getElementById('g-title').innerHTML=cat==='ladies'?`Les <span>${t.ladies}</span>`:`Les <span>${t.gents}</span>`;
+  document.querySelectorAll('.filt').forEach(f=>f.classList.remove('active'));
+  document.getElementById('f-all').classList.add('active');
+  renderGallery();showScreen('gallery-screen');
+}
+function renderGallery(){
+  const data=(currentCat==='ladies'?ladies:gents).filter(p=>p.active!==false);
+  const filtered=currentFilter==='all'?data:data.filter(p=>p.city===currentFilter||p.langs.includes(currentFilter));
+  document.getElementById('pgrid').innerHTML=filtered.map(p=>{
+    const isFav=favorites.includes(p.id);
+    const hasPhoto=p.photos&&p.photos.length>0;
+    const sil=currentCat==='ladies'?'pc-sil-f':'pc-sil-m';
+    const imgContent=hasPhoto?`<img class="pc-photo" src="${p.photos[0]}" alt="${p.name}">`:`<div class="pc-sil ${sil}">${p.emoji}</div>`;
+    return `<div class="pcard" onclick="showProfile('${p.id}')">
+      <div class="pc-img">${imgContent}<div class="pc-overlay"></div>${p.verified?'<div class="pc-badge">VÉRIFIÉ ✓</div>':''}
+        <button class="pc-fav ${isFav?'on':''}" onclick="toggleFav(event,'${p.id}')">${isFav?'❤️':'🤍'}</button></div>
+      <div class="pc-info">
+        <div class="pc-name">${p.name}</div>
+        <div class="pc-meta">${p.age} ANS · ${p.city.toUpperCase()}</div>
+        <div class="pc-langs">${p.langs.map(l=>`<span class="ltag">${l}</span>`).join('')}</div>
+        <div class="pc-rate">${p.rate}€/h</div>
+      </div></div>`;
+  }).join('');
+  updateFavBadge();
+}
+function doFilter(f,el){currentFilter=f;document.querySelectorAll('.filt').forEach(x=>x.classList.remove('active'));el.classList.add('active');renderGallery();}
+function toggleFav(e,id){e.stopPropagation();const i=favorites.indexOf(id);if(i===-1)favorites.push(id);else favorites.splice(i,1);localStorage.setItem('cp_favs',JSON.stringify(favorites));renderGallery();}
+function updateFavBadge(){const b=document.getElementById('fav-badge');if(favorites.length>0){b.style.display='flex';b.textContent=favorites.length;}else b.style.display='none';}
+
+// ══════════════════════════════════════════════════
+// FAVORITES
+// ══════════════════════════════════════════════════
+function renderFavs(){
+  const all=[...ladies,...gents];
+  const fp=all.filter(p=>favorites.includes(p.id));
+  const body=document.getElementById('fav-body');
+  if(!fp.length){body.innerHTML='<div class="fav-empty"><div class="fav-empty-ic">🤍</div><div class="fav-empty-t">Vos favoris apparaîtront ici...</div></div>';return;}
+  body.innerHTML=`<div class="pgrid" style="padding:0 1rem 1rem;">${fp.map(p=>{
+    const isL=!!ladies.find(x=>x.id===p.id);
+    const sil=isL?'pc-sil-f':'pc-sil-m';
+    const hasPhoto=p.photos&&p.photos.length>0;
+    const imgContent=hasPhoto?`<img class="pc-photo" src="${p.photos[0]}" alt="${p.name}">`:`<div class="pc-sil ${sil}">${p.emoji}</div>`;
+    return `<div class="pcard" onclick="showProfileFromFav('${p.id}')">
+      <div class="pc-img">${imgContent}<div class="pc-overlay"></div>
+        <button class="pc-fav on" onclick="removeFavF(event,'${p.id}')">❤️</button></div>
+      <div class="pc-info"><div class="pc-name">${p.name}</div><div class="pc-meta">${p.age} ANS · ${p.city.toUpperCase()}</div><div class="pc-rate">${p.rate}€/h</div></div></div>`;
+  }).join('')}</div>`;
+}
+function removeFavF(e,id){e.stopPropagation();const i=favorites.indexOf(id);if(i!==-1)favorites.splice(i,1);localStorage.setItem('cp_favs',JSON.stringify(favorites));renderFavs();updateFavBadge();}
+function showProfileFromFav(id){const p=[...ladies,...gents].find(x=>x.id===id);if(p){currentCat=ladies.find(x=>x.id===id)?'ladies':'gents';prevProfileCat=currentCat;_showProfile(p);}}
+
+// ══════════════════════════════════════════════════
+// PROFILE DETAIL
+// ══════════════════════════════════════════════════
+function showProfile(id){const data=currentCat==='ladies'?ladies:gents;const p=data.find(x=>x.id===id);if(!p)return;prevProfileCat=currentCat;_showProfile(p);}
+function _showProfile(p){
+  currentProfile=p;heroIdx=0;
+  const isLady=!!ladies.find(x=>x.id===p.id);
+  const hasPhotos=p.photos&&p.photos.length>0;
+  const slideClass=isLady?'ph-slide-f':'ph-slide-m';
+  const slides=hasPhotos
+    ?p.photos.map(ph=>`<div class="ph-slide"><img src="${ph}" alt="${p.name}"></div>`)
+    :p.emojis.map(e=>`<div class="ph-slide ${slideClass}">${e}</div>`);
+  document.getElementById('ph-slides').innerHTML=slides.join('');
+  document.getElementById('ph-slides').style.transform='translateX(0)';
+  const cnt=hasPhotos?p.photos.length:p.emojis.length;
+  document.getElementById('ph-dots').innerHTML=Array.from({length:cnt},(_,i)=>`<div class="ph-dot ${i===0?'active':''}"></div>`).join('');
+  setupHeroSwipe(cnt);
+  document.getElementById('ph-name').textContent=p.name;
+  document.getElementById('ph-meta').textContent=`${p.age} ANS · ${p.city.toUpperCase()}${p.verified?' · VÉRIFIÉ ✓':''}`;
+  document.getElementById('sv-rate').textContent=p.rate+'€';
+  document.getElementById('sv-age').textContent=p.age;
+  document.getElementById('sv-city').textContent=p.city;
+  document.getElementById('p-bio').textContent=p.bio;
+  document.getElementById('p-tags').innerHTML=[...p.langs.map(l=>`<span class="tag g">🌐 ${l}</span>`),...p.interests.map(i=>`<span class="tag">${i}</span>`)].join('');
+  const fb=document.getElementById('ph-fav');const isFav=favorites.includes(p.id);
+  fb.textContent=isFav?'❤️':'🤍';fb.classList.toggle('on',isFav);
+  document.getElementById('b-dt').value=new Date().toISOString().split('T')[0];
+  applyLang();calcP();showScreen('profile-screen');
+  document.getElementById('profile-screen').scrollTop=0;
+}
+function backFromProfile(){showGallery(prevProfileCat);}
+function toggleFavP(){if(!currentProfile)return;const id=currentProfile.id;const i=favorites.indexOf(id);if(i===-1)favorites.push(id);else favorites.splice(i,1);localStorage.setItem('cp_favs',JSON.stringify(favorites));const fb=document.getElementById('ph-fav');fb.textContent=favorites.includes(id)?'❤️':'🤍';fb.classList.toggle('on',favorites.includes(id));updateFavBadge();}
+function setupHeroSwipe(count){
+  const wrap=document.getElementById('ph-wrap');let sx=0;
+  wrap.ontouchstart=e=>{sx=e.touches[0].clientX;};
+  wrap.ontouchend=e=>{const dx=e.changedTouches[0].clientX-sx;const max=(count||1)-1;if(Math.abs(dx)>40){if(dx<0)heroIdx=Math.min(heroIdx+1,max);else heroIdx=Math.max(heroIdx-1,0);document.getElementById('ph-slides').style.transform=`translateX(-${heroIdx*100}%)`;document.querySelectorAll('.ph-dot').forEach((d,i)=>d.classList.toggle('active',i===heroIdx));}};
+}
+function calcP(){if(!currentProfile)return;const sel=document.getElementById('b-dr').value.split(',');const price=currentProfile.rate*parseInt(sel[1]);const durText=document.getElementById('b-dr').options[document.getElementById('b-dr').selectedIndex].text;document.getElementById('pv').textContent=price+'€';document.getElementById('pb').textContent=`${durText} × ${currentProfile.rate}€/h`;}
+function bookWA(){
+  if(!currentProfile)return;
+  const p=currentProfile;
+  const ps=document.getElementById('b-ps').value||'Anonyme';
+  const vl=document.getElementById('b-vl').value||'À définir';
+  const dt=document.getElementById('b-dt').value||'À définir';
+  const hr=document.getElementById('b-hr').value||'20:00';
+  const drSel=document.getElementById('b-dr');
+  const dr=drSel.options[drSel.selectedIndex].text;
+  const price=document.getElementById('pv').textContent.replace('€','');
+  const msg=(TX[lang]||TX.fr).wa(p.name,dt,hr,dr,vl,ps,price);
+  window.open(`https://wa.me/2290151474715?text=${encodeURIComponent(msg)}`,'_blank');
+}
+
+// ══════════════════════════════════════════════════
+// ADMIN
+// ══════════════════════════════════════════════════
+function showAdminLogin(){adminUnlocked=false;document.getElementById('admin-login-wrap').style.display='flex';document.getElementById('admin-panel').style.display='none';document.getElementById('admin-pw').value='';document.getElementById('pw-err').classList.remove('show');showScreen('admin-screen');}
+function checkAdminPw(){const pw=document.getElementById('admin-pw').value;if(pw===ADMIN_PW){adminUnlocked=true;document.getElementById('admin-login-wrap').style.display='none';document.getElementById('admin-panel').style.display='flex';renderAdminPanel();}else{document.getElementById('pw-err').classList.add('show');setTimeout(()=>document.getElementById('pw-err').classList.remove('show'),2500);}}
+function renderAdminPanel(){
+  const al=ladies.filter(p=>p.active!==false).length;const ag=gents.filter(p=>p.active!==false).length;
+  document.getElementById('adm-total').textContent=ladies.length+gents.length;
+  document.getElementById('adm-active').textContent=al+ag;
+  document.getElementById('adm-favs').textContent=favorites.length;
+  document.getElementById('adm-lang').textContent=lang.toUpperCase();
+  document.getElementById('adm-ladies').innerHTML=ladies.map(p=>adminItem(p,'ladies')).join('');
+  document.getElementById('adm-gents').innerHTML=gents.map(p=>adminItem(p,'gents')).join('');
+}
+function adminItem(p,cat){
+  const isOn=p.active!==false;
+  const hasPhotos=p.photos&&p.photos.length>0;
+  const photoHtml=hasPhotos?`<div class="admin-photos-preview">${p.photos.map(ph=>`<div class="adm-photo"><img src="${ph}" alt=""></div>`).join('')}</div>`:'' ;
+  return `<div class="admin-pitem">
+    <div style="display:flex;align-items:center;gap:10px;">
+      <div style="width:40px;height:50px;border-radius:8px;overflow:hidden;background:rgba(255,255,255,.05);flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:1.5rem;">${hasPhotos?`<img src="${p.photos[0]}" style="width:100%;height:100%;object-fit:cover;">`:p.emoji}</div>
+      <div style="flex:1;"><div style="font-family:'Playfair Display',serif;font-size:.9rem;">${p.name}</div><div style="font-size:.52rem;color:var(--t3);margin-top:2px;">${p.age} ans · ${p.city} · ${p.rate}€/h · ${(p.photos||[]).length} photo(s)</div></div>
+      <div style="display:flex;gap:6px;align-items:center;">
+        <div class="api-toggle ${isOn?'on':''}" onclick="toggleActive('${p.id}','${cat}',this)"></div>
+        <button class="api-edit" onclick="openEditModal('${p.id}','${cat}')">✏️</button>
+        <button class="api-del" onclick="deleteProfile('${p.id}','${cat}')">🗑</button>
+      </div>
+    </div>${photoHtml}</div>`;
+}
+function toggleActive(id,cat,el){const arr=cat==='ladies'?ladies:gents;const p=arr.find(x=>x.id===id);if(!p)return;p.active=!p.active;el.classList.toggle('on',p.active);saveProfiles();renderAdminPanel();}
+function deleteProfile(id,cat){if(!confirm('Supprimer ce profil ?'))return;if(cat==='ladies')ladies=ladies.filter(p=>p.id!==id);else gents=gents.filter(p=>p.id!==id);saveProfiles();renderAdminPanel();}
+function openAddModal(cat){editingId=null;editingCat=cat;currentPhotos=[];['m-name','m-age','m-city','m-rate','m-emoji','m-langs','m-interests','m-bio','m-id'].forEach(id=>{document.getElementById(id).value='';});document.getElementById('m-cat').value=cat;renderPhotoPreviews();updateStorageBar();document.getElementById('edit-modal').classList.remove('hidden');}
+function openEditModal(id,cat){editingId=id;editingCat=cat;const arr=cat==='ladies'?ladies:gents;const p=arr.find(x=>x.id===id);if(!p)return;currentPhotos=p.photos?[...p.photos]:[];document.getElementById('modal-title').textContent='Modifier le profil';document.getElementById('m-id').value=id;document.getElementById('m-cat').value=cat;document.getElementById('m-name').value=p.name;document.getElementById('m-age').value=p.age;document.getElementById('m-city').value=p.city;document.getElementById('m-rate').value=p.rate;document.getElementById('m-emoji').value=p.emoji;document.getElementById('m-langs').value=p.langs.join(',');document.getElementById('m-interests').value=p.interests.join(',');document.getElementById('m-bio').value=p.bio;renderPhotoPreviews();updateStorageBar();document.getElementById('edit-modal').classList.remove('hidden');}
+function closeModal(){document.getElementById('edit-modal').classList.add('hidden');currentPhotos=[];}
+function saveProfile(){
+  const cat=document.getElementById('m-cat').value;
+  const name=document.getElementById('m-name').value.trim();
+  if(!name){alert('Le nom est requis');return;}
+  const emoji=document.getElementById('m-emoji').value||'👤';
+  const profile={id:editingId||((cat==='ladies'?'L':'G')+Date.now()),name,age:parseInt(document.getElementById('m-age').value)||25,city:document.getElementById('m-city').value.trim()||'Paris',rate:parseInt(document.getElementById('m-rate').value)||150,verified:false,active:true,emoji,emojis:[emoji],photos:[...currentPhotos],langs:document.getElementById('m-langs').value.split(',').map(s=>s.trim()).filter(Boolean),interests:document.getElementById('m-interests').value.split(',').map(s=>s.trim()).filter(Boolean),bio:document.getElementById('m-bio').value.trim()||'Description à venir.',};
+  if(editingId){const arr=cat==='ladies'?ladies:gents;const existing=arr.find(x=>x.id===editingId);if(existing)profile.verified=existing.verified;const idx=arr.findIndex(x=>x.id===editingId);if(idx!==-1)arr[idx]=profile;}
+  else{if(cat==='ladies')ladies.push(profile);else gents.push(profile);}
+  try{saveProfiles();}catch(e){alert('⚠️ Stockage plein ! Réduisez les photos.');return;}
+  closeModal();renderAdminPanel();
+}
+function saveProfiles(){localStorage.setItem('cp_ladies',JSON.stringify(ladies));localStorage.setItem('cp_gents',JSON.stringify(gents));}
+
+// ══════════════════════════════════════════════════
+// PHOTO UPLOAD
+// ══════════════════════════════════════════════════
+function handlePhotoUpload(input){
+  const files=Array.from(input.files);const remaining=5-currentPhotos.length;
+  if(remaining<=0){alert('Maximum 5 photos par profil');return;}
+  let processed=0;const toProcess=files.slice(0,remaining);
+  toProcess.forEach(file=>{
+    const reader=new FileReader();
+    reader.onload=e=>{compressImage(e.target.result,800,.75,compressed=>{currentPhotos.push(compressed);processed++;if(processed===toProcess.length)renderPhotoPreviews();});};
+    reader.readAsDataURL(file);
+  });
+  input.value='';
+}
+function compressImage(dataUrl,maxSize,quality,cb){
+  const img=new Image();
+  img.onload=()=>{const canvas=document.createElement('canvas');let w=img.width,h=img.height;if(w>maxSize||h>maxSize){if(w>h){h=Math.round(h*maxSize/w);w=maxSize;}else{w=Math.round(w*maxSize/h);h=maxSize;}}canvas.width=w;canvas.height=h;canvas.getContext('2d').drawImage(img,0,0,w,h);cb(canvas.toDataURL('image/jpeg',quality));};
+  img.src=dataUrl;
+}
+function renderPhotoPreviews(){
+  const c=document.getElementById('photos-preview');const hint=document.getElementById('photo-hint');
+  c.innerHTML=currentPhotos.map((ph,i)=>`<div class="photo-thumb"><img src="${ph}" alt="Photo ${i+1}"><button class="photo-thumb-del" onclick="removePhoto(${i})">✕</button>${i===0?'<div class="main-badge">PRINCIPALE</div>':''}</div>`).join('');
+  hint.style.display=currentPhotos.length>0?'block':'none';updateStorageBar();
+}
+function removePhoto(idx){currentPhotos.splice(idx,1);renderPhotoPreviews();}
+function updateStorageBar(){
+  try{let total=0;for(let k in localStorage)if(localStorage.hasOwnProperty(k))total+=localStorage.getItem(k).length*2;const kb=Math.round(total/1024);const pct=Math.min(100,Math.round(kb/5000*100));document.getElementById('storage-used').textContent=kb>1024?(kb/1024).toFixed(1)+' MB':kb+' KB';const fill=document.getElementById('storage-fill');fill.style.width=pct+'%';fill.style.background=pct>80?'#FF4757':pct>60?'#FFA502':'';}catch(e){}
+}
+
+// ══════════════════════════════════════════════════
+// INIT
+// ══════════════════════════════════════════════════
+document.getElementById('bio-toggle').classList.toggle('on',bioEnabled);
+document.getElementById('lang-sel').value=lang;
+document.querySelectorAll('.lang-opt').forEach(o=>o.classList.remove('active'));
+const lo=document.getElementById('lo-'+lang);if(lo)lo.classList.add('active');
+updateFavBadge();
+if(sessionStorage.getItem('cp_age')==='ok')initPin();
+else showScreen('age-gate');
+</script>
+</body>
+</html>
